@@ -1,4 +1,4 @@
-package com.example.hackathon_3scjo
+package com.example.reclamacao
 
 import io.flutter.embedding.android.FlutterActivity
 
