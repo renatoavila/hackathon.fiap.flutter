@@ -39,7 +39,7 @@ INJECTED from /Users/bebeto/Documents/MyStuff/AndroidStudio/reclamacao/android/a
 INJECTED from /Users/bebeto/Documents/MyStuff/AndroidStudio/reclamacao/android/app/src/debug/AndroidManifest.xml:1:1-8:12
 INJECTED from /Users/bebeto/Documents/MyStuff/AndroidStudio/reclamacao/android/app/src/debug/AndroidManifest.xml:1:1-8:12
 	package
-		ADDED from /Users/bebeto/Documents/MyStuff/AndroidStudio/reclamacao/android/app/src/main/AndroidManifest.xml:2:5-42
+		ADDED from /Users/bebeto/Documents/MyStuff/AndroidStudio/reclamacao/android/app/src/main/AndroidManifest.xml:2:5-37
 		INJECTED from /Users/bebeto/Documents/MyStuff/AndroidStudio/reclamacao/android/app/src/main/AndroidManifest.xml
 		INJECTED from /Users/bebeto/Documents/MyStuff/AndroidStudio/reclamacao/android/app/src/debug/AndroidManifest.xml
 	android:versionName

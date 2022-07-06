@@ -1,4 +1,4 @@
-com.example.hackathon_3scjo
+com.example.reclamacao
 attr activityAction
 attr activityName
 attr alpha

@@ -1,4 +1,4 @@
-#Mon Jul 04 19:39:57 BRT 2022
+#Tue Jul 05 23:24:08 BRT 2022
 base.0=/Users/bebeto/Documents/MyStuff/AndroidStudio/reclamacao/build/app/intermediates/dex/debug/mergeDexDebug/classes.dex
 renamed.0=classes.dex
 path.0=classes.dex
