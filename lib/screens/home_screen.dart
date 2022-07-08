@@ -98,7 +98,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           InkWell(
                             onTap: () {
-                              Navigator.pushNamed(context, LoginScreen.id);
+                              Navigator.pushNamed(context, AjudaScreen.id);
                             },
 
                             child: Container(
@@ -120,7 +120,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           InkWell(
                             onTap: () {
-                              Navigator.pushNamed(context, ReportScreen.id);
+                              Navigator.pushNamed(context, AjudaScreen.id);
                             },
 
                             child: Container(

@@ -185,7 +185,7 @@ class _ChamadoScreenState extends State<ChamadoScreen> {
     //final responseJson = jsonDecode(response.body);
 
     //final String dados_qa= await rootBundle.loadString('data/reclama.json');
-    final String dados_qa='{"results": [{"Cpf": "11111111111","Texto": "Como faco para usar o App","DataHora": "03072022","Atendimento": "Nao","Timer": "30"},{"Cpf": "22222222222","Texto": "Qual a area de cobertura do app","DataHora": "2072022","Atendimento": "Nao","Timer": "60"},{"Cpf": "33333333333","Texto": "Voces atendem apenas em Sao Paulo","DataHora": "3072022","Atendimento": "Nao","Timer": "20"},{"Cpf": "11111111111","Texto": "Voces tem tambem acesso a espacos privados?","DataHora": "4072022","Atendimento": "Nao","Timer": "60"}]}';
+    const String dados_qa='{"results": [{"Cpf": "11111111111","Texto": "Como faco para usar o App","DataHora": "03072022","Atendimento": "Nao","Timer": "30"},{"Cpf": "22222222222","Texto": "Qual a area de cobertura do app","DataHora": "2072022","Atendimento": "Nao","Timer": "60"},{"Cpf": "33333333333","Texto": "Voces atendem apenas em Sao Paulo","DataHora": "3072022","Atendimento": "Nao","Timer": "20"},{"Cpf": "11111111111","Texto": "Voces tem tambem acesso a espacos privados?","DataHora": "4072022","Atendimento": "Nao","Timer": "60"}]}';
     final jsonResponse = await jsonDecode(dados_qa);
 
     reclamaList = jsonResponse['results']
