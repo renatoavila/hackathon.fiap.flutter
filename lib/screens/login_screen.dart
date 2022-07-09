@@ -24,7 +24,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   List<Login> loginList = [];
 
-  var emailDeLogin;
+  //var emailDeLogin;
+  //late bool atendente;
 
   final TextEditingController emailController =  TextEditingController();
   final TextEditingController passController =  TextEditingController();
@@ -56,8 +57,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if(responseJson['atendente'] == true) {
          Navigator.pushNamed(context, AtendenteScreen.id);
        }else {
-         Navigator.pushNamed(context, ChamadoScreen.id);
-       }
+         //Navigator.pushNamed(context, ChamadoScreen.id);
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => ChamadoScreen(email: responseJson['email'])));
+
+      }
     }
     else {
       // If the server did not return a 201 CREATED response,

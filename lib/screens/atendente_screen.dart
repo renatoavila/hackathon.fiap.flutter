@@ -19,6 +19,7 @@ class AtendenteScreen extends StatefulWidget {
 }
 
 class _AtendenteScreenState extends State<AtendenteScreen> {
+
   List<Reclama> reclamaList = [];
   List<dynamic> chamadoList = [];
 
@@ -77,6 +78,7 @@ class _AtendenteScreenState extends State<AtendenteScreen> {
       _showDialog(context, "Nao foi possivel registrar sua pergunta.", "\n\nTente novamente!");
       perguntaController.clear();
     }
+    setState(() => {});
   }
 
 
@@ -113,12 +115,11 @@ class _AtendenteScreenState extends State<AtendenteScreen> {
       }
 
     }
+    setState(() => {});
   }
 
   @override
   Widget build(BuildContext context) {
-    //final  Map<String, Object>emailArg = ModalRoute.of(context)?.settings.arguments as Map<String, Object>;
-    //emailChamado=emailArg!['email'] as String;
 
     return Scaffold(
 
@@ -239,7 +240,9 @@ class _AtendenteScreenState extends State<AtendenteScreen> {
                                             overflow: TextOverflow.ellipsis,),
                                           IconButton(
                                             icon: Icon(Icons.edit),
-                                            onPressed: () {},
+                                            onPressed: () {
+                                              _showDialog(context, "Voce selecionou este chamado para atualização:", qa.id.toString().padLeft(6,"0"));
+                                            },
                                             color: Theme.of(context).primaryColor,
                                           ),
                                         ]
@@ -251,6 +254,25 @@ class _AtendenteScreenState extends State<AtendenteScreen> {
                     );
                   },
                   separatorBuilder: (context, index) => const Divider(),
+                ),
+              ),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.black45, width: 2),
+                    padding: EdgeInsets.only(left:70, bottom: 25, right: 50, top:25),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)
+                    )
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, HomeScreen.id);
+                },
+                child: Text(
+                    "Sair",
+                    textAlign: TextAlign.left,
+                    style: GoogleFonts.didactGothic(
+                      textStyle: TextStyle(color: Colors.black54, fontSize: 20, fontWeight: FontWeight.bold),
+                    )
                 ),
               ),
             ]

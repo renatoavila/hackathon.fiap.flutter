@@ -1,127 +1,200 @@
 import 'dart:convert';
+import 'dart:html';
+import 'dart:js';
+import 'dart:typed_data';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path/path.dart';
 import 'package:reclamacao/models/chamado.dart';
 import 'package:reclamacao/models/reclama.dart';
 import 'home_screen.dart';
-import 'login_screen.dart';
+import 'imagem_screen.dart';
+
+class ChamadoScreen extends StatelessWidget {
 
 
-class ChamadoScreen extends StatefulWidget {
   static const String id = '/chamado';
+  ChamadoScreen({Key? key, required this.email}) : super(key: key);
+  String? email;
 
-  const ChamadoScreen({Key? key}) : super(key: key);
+    int myID=0;
+    String myFileName="";
+    List<Reclama> reclamaList = [];
+    List<dynamic> chamadoList = [];
 
-  @override
-  State<ChamadoScreen> createState() => _ChamadoScreenState();
-}
+    List<int> _selectedFile = [];
+    Uint8List? _bytesData;
 
-class _ChamadoScreenState extends State<ChamadoScreen> {
-  List<Reclama> reclamaList = [];
-  List<dynamic> chamadoList = [];
+    final TextEditingController perguntaController =  TextEditingController();
 
-  final TextEditingController perguntaController =  TextEditingController();
-
-  late String emailChamado;
-
-  @override
-  void initState() {
-    super.initState();
-    obterTodosChamados();
-  }
-
-  //-------------------------------------
-  Future<void> _showDialog(BuildContext context, str1, str2) async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: new Text("Aviso !!"),
-          content: new Text(str1 + " " + str2),
-          actions: <Widget>[
-            new FlatButton(
-              child: new Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-
-  //-------------------------------------
-  Future criarNovoChamado(String email, String pergunta) async {
-    final response = await Client().post(
-      Uri.parse('http://144.22.210.64:9991/api/criar'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'email': email,
-        'texto': pergunta,
-      }),
-    );
-    if (response.statusCode == 200) {
-      // navigate to next page
-      //Navigator.pushNamed(context, ChamadoScreen.id);
-
-    } else {
-      // If the server did not return a 201 CREATED response,
-      // then throw an exception.
-      _showDialog(context, "Nao foi possivel registrar sua pergunta.", "\n\nTente novamente!");
-      perguntaController.clear();
+    //-------------------------------------
+    Future<void> _showDialog(context, str1, str2) async {
+      showDialog(
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text("Aviso !!"),
+            content: new Text(str1 + " " + str2),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        }, context: context,
+      );
     }
-  }
 
 
-  //-------------------------------------
-  Future obterTodosChamados() async {
+    //-------------------------------------
+    Future criarNovoChamado(String email, String pergunta) async {
 
-    final uri = Uri.parse('http://144.22.210.64:9991/api/obterTodos');
-    final response = await Client().get(uri);
+      final response = await http.post(
+        Uri.parse('http://144.22.210.64:9991/api/criar'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'email': email,
+          'texto': pergunta,
+        }),
+      );
+      if (response.statusCode == 200) {
 
-    final responseJson = jsonDecode(response.body);
+        final responseJson = jsonDecode(response.body);
+        myID = responseJson['id'];
 
-    if (response.statusCode == 200) {
-      // navigate to next page
+        print('ID para a foto é: '+myID.toString());
+        if(_selectedFile.length >0) {
+          salvarFoto(myID, _selectedFile);
+        }
 
-      chamadoList = responseJson.map(
-            (json) => Chamado(
-              id:  json['id'],
-              email:  json['email'],
-              texto:  json['texto'],
-              urlImagem:  json['urlImagem'],
-              dataCadastro:  DateTime.parse(json['dataCadastro']),
-            ),
-      )
-          .toList();
 
-    } else {
-      if (response.statusCode == 404) {
-        _showDialog(context, "Voce ainda nao tem nenhum chamado cadastrado",
-            "\n\n!");
+      } else {
+        // If the server did not return a 201 CREATED response,
+        // then throw an exception.
+        _showDialog(context, "Nao foi possivel registrar sua pergunta.", "\n\nTente novamente!");
+        perguntaController.clear();
+      }
+    }
+
+    //-------------------------------------
+    Future obterChamados(String email) async {
+
+      String uri='http://144.22.210.64:9991/api/obterEmail/'+email;
+      var encoded=Uri.encodeQueryComponent(uri);
+
+      final response = await http.get(
+        Uri.parse(uri),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+
+        final responseJson = jsonDecode(response.body);
+print(responseJson);
+        chamadoList = responseJson.map(
+              (json) => Chamado(
+            id:  json['id'],
+            email:  json['email'],
+            texto:  json['texto'],
+            urlImagem:  json['urlImagem'],
+            dataCadastro:  DateTime.parse(json['dataCadastro']),
+          ),
+        )
+            .toList();
       }
       else {
-        _showDialog(context, "Algo inesperado aconteceu !",
-            "\n\n Por favor tente novamente!");
-      }
+        if (response.statusCode == 404) {
+          _showDialog(context, "Ainda nao existe nenhum chamado cadastrado",
+              "\n\n!");
+        }
+        else {
+          _showDialog(context, "Algo inesperado aconteceu !",
+              "\n\n Por favor tente novamente!");
+        }
 
+      }
     }
+  //-------------------------------------
+  Future salvarFoto(int id, List<int>myFile) async {
+
+      print('Salvando image para id: '+ id.toString());
+
+    var url=Uri.parse('http://144.22.210.64:9991/api/salvarFoto/'+id.toString());
+    var request = http.MultipartRequest("POST", url);
+
+    request.files.add(await http.MultipartFile.fromBytes(
+        'file', myFile,
+        contentType: MediaType('application', 'octet-stream'),
+        filename: myFileName
+    ));
+    request.send().then((response) {
+      print("test");
+      print(response.statusCode);
+      if (response.statusCode == 200) print("Uploaded!");
+    });
+
   }
 
-  @override
-  Widget build(BuildContext context) {
-    //final  Map<String, Object>emailArg = ModalRoute.of(context)?.settings.arguments as Map<String, Object>;
-    //emailChamado=emailArg!['email'] as String;
 
-    return Scaffold(
+  //--------------------------------------
+    _startFilePicker(BuildContext myContext) async {
+      FileUploadInputElement uploadInput = FileUploadInputElement();
+      uploadInput.click();
 
-        body: Column (
+      uploadInput.onChange.listen((e) {
+        // read file content as dataURL
+        final files = uploadInput.files;
+        if (files?.length == 1) {
+          final file = files![0];
+          FileReader reader =  FileReader();
+
+          reader.onLoadEnd.listen((e) {
+            //setState(() {
+              //var uploadedImage = reader.result as Uint8List;
+            //_bytesData = Base64Decoder().convert(reader.result.toString().split(",").last);
+            //_selectedFile = _bytesData as List<int>;
+            _selectedFile = reader.result as Uint8List;
+
+            _showDialog(myContext, 'A image '+ file.name+' esta anexada ao seu chamado', 'Pressione Enviar para prosseguir: ');
+
+           // });
+          });
+          myFileName=file.name;
+
+          reader.onError.listen((fileEvent) {
+            //setState(() {
+              String option1Text = "Some Error occured while reading the file";
+            //});
+          });
+          reader.readAsArrayBuffer(file);
+        }
+      });
+    }
+
+    //----------------------------
+    @override
+    Widget build(BuildContext context) {
+
+      final String? emailLogin =  email;
+
+      obterChamados(emailLogin!);
+
+      print('tamanho: ' + chamadoList.length.toString());
+
+      return Scaffold(
+
+          body: Column (
             children: [
               Row (
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -143,7 +216,7 @@ class _ChamadoScreenState extends State<ChamadoScreen> {
                         children: [
                           Padding(
                             padding: EdgeInsets.only(
-                                left: 60, bottom: 10, right: 70, top: 85),
+                                left: 80, bottom: 10, right: 70, top: 85),
                             //apply padding to some sides only
                             child: Text(
                                 'Digite aqui a sua pergunta!',
@@ -192,84 +265,86 @@ class _ChamadoScreenState extends State<ChamadoScreen> {
                   children: [
 
                     OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.black45, width: 2),
-                            padding: EdgeInsets.only(left:70, bottom: 15, right: 70, top:15),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)
-                            )
-                        ),
+                      style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.black45, width: 2),
+                          padding: EdgeInsets.only(left:70, bottom: 15, right: 70, top:15),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)
+                          )
+                      ),
 
-                        onPressed: () {
-                          Navigator.pushNamed(context, LoginScreen.id);
-                        },
+                      onPressed: () {
+                        _startFilePicker(context);
+                        //post a imagem
+                      },
 
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            //crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Image.asset('anexarImagem.png', scale: 1.5),
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    left: 20, bottom: 10, right: 2, top: 10),
-                                //apply padding to some sides only
-                                child: Text(
-                                    "Anexar Imagem",
-                                    textAlign: TextAlign.left,
-                                    style: GoogleFonts.didactGothic(
-                                      textStyle: TextStyle(color: Colors.black54, fontSize: 20, fontWeight: FontWeight.bold),
-                                    )
-                                ),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          //crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Image.asset('anexarImagem.png', scale: 1.5),
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  left: 20, bottom: 10, right: 2, top: 10),
+                              //apply padding to some sides only
+                              child: Text(
+                                  "Anexar Imagem",
+                                  textAlign: TextAlign.left,
+                                  style: GoogleFonts.didactGothic(
+                                    textStyle: TextStyle(color: Colors.black54, fontSize: 20, fontWeight: FontWeight.bold),
+                                  )
                               ),
-                            ]
-                        ),
+                            ),
+                          ]
                       ),
+                    ),
 
 
                     OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.black45, width: 2),
-                            padding: EdgeInsets.only(left:70, bottom: 25, right: 50, top:25),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)
-                            )
-                        ),
-
-                        onPressed: () {
-                          criarNovoChamado("solicitante1@pontolep.com",perguntaController.text);
-                          Navigator.pushNamed(context, HomeScreen.id);
-                          _showDialog(context, "Chamado cadastrado com sucesso!", "Obrigado");
-
-                        },
-
-                        child: Text(
-                            "Enviar",
-                            textAlign: TextAlign.left,
-                            style: GoogleFonts.didactGothic(
-                              textStyle: TextStyle(color: Colors.black54, fontSize: 20, fontWeight: FontWeight.bold),
-                            )
-                        ),
+                      style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.black45, width: 2),
+                          padding: EdgeInsets.only(left:70, bottom: 25, right: 50, top:25),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)
+                          )
                       ),
+
+                      onPressed: () {
+                        criarNovoChamado(email!,perguntaController.text);
+
+                        //Navigator.pushNamed(context, HomeScreen.id);
+                        _showDialog(context, "Chamado cadastrado com sucesso!", "Obrigado");
+
+                      },
+
+                      child: Text(
+                          "Enviar",
+                          textAlign: TextAlign.left,
+                          style: GoogleFonts.didactGothic(
+                            textStyle: TextStyle(color: Colors.black54, fontSize: 20, fontWeight: FontWeight.bold),
+                          )
+                      ),
+                    ),
 
                     OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.black45, width: 2),
-                            padding: EdgeInsets.only(left:70, bottom: 25, right: 50, top:25),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)
-                            )
-                        ),
-                        onPressed: () {
-                          Navigator.pushNamed(context, HomeScreen.id);
-                        },
-                        child: Text(
-                            "Sair",
-                            textAlign: TextAlign.left,
-                            style: GoogleFonts.didactGothic(
-                              textStyle: TextStyle(color: Colors.black54, fontSize: 20, fontWeight: FontWeight.bold),
-                            )
-                        ),
+                      style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.black45, width: 2),
+                          padding: EdgeInsets.only(left:70, bottom: 25, right: 50, top:25),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)
+                          )
                       ),
+                      onPressed: () {
+                        Navigator.pushNamed(context, HomeScreen.id);
+                      },
+                      child: Text(
+                          "Sair",
+                          textAlign: TextAlign.left,
+                          style: GoogleFonts.didactGothic(
+                            textStyle: TextStyle(color: Colors.black54, fontSize: 20, fontWeight: FontWeight.bold),
+                          )
+                      ),
+                    ),
                   ]
               ),
 
@@ -279,62 +354,62 @@ class _ChamadoScreenState extends State<ChamadoScreen> {
               Padding(
                 padding: EdgeInsets.only(left: 10, bottom: 20, right: 10, top: 70),
                 child: Column(
-                      //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                      children:[
-                        Text('Seus chamados abertos, caso os tenha, estão listados abaixo:',
+                    children:[
+                      Text('Seus chamados abertos, caso os tenha, estão listados abaixo:',
                           style: GoogleFonts.didactGothic(
                             textStyle: TextStyle(color: Colors.black54, fontSize: 20, fontWeight: FontWeight.bold),
                           )
-                        ),
-                        Padding(
+                      ),
+                      Padding(
                           padding: EdgeInsets.only(left: 5, bottom: 10, right: 5, top: 20),
                           child: Card(
                               child:Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                //mainAxisSize: MainAxisSize.min,
-                                children:[
-                                  Container(
-                                    width: 135,
-                                    child: Text("Chamado", maxLines: 1,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  //mainAxisSize: MainAxisSize.min,
+                                  children:[
+                                    Container(
+                                      width: 135,
+                                      child: Text("Chamado", maxLines: 1,
                                         overflow: TextOverflow.ellipsis,),
                                     ),
-                                  SizedBox(
-                                     height: 50, width: 800,
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                              width: 350,
-                                              child: Text("Pergunta",
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,),
-                                            ),
-                                            Container(
-                                              width: 202,
-                                              child: Text("Data/Hora abertura",
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,),
-                                            ),
-                                            Container(
-                                              width: 205,
-                                              child: Text("Tempo", maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,),
-                                            ),
-                                            Container(
-                                              child: Text("Editar", maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,),
-                                            )
-                                        ]
-                                      )
-                                  ),
-                                ]
+                                    SizedBox(
+                                        height: 50, width: 800,
+                                        child: Row(
+                                            children: [
+                                              Container(
+                                                width: 350,
+                                                child: Text("Pergunta",
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,),
+                                              ),
+                                              Container(
+                                                width: 202,
+                                                child: Text("Data/Hora abertura",
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,),
+                                              ),
+                                              Container(
+                                                width: 205,
+                                                child: Text("Tempo", maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,),
+                                              ),
+                                              Container(
+                                                child: Text("Editar", maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,),
+                                              )
+                                            ]
+                                        )
+                                    ),
+                                  ]
                               )
-                            )
-                        )
-                      ]
-                    ),
+                          )
+                      )
+                    ]
                 ),
+              ),
 
               //-----------------------------------------
               // corpo da lista de chamados
@@ -343,24 +418,23 @@ class _ChamadoScreenState extends State<ChamadoScreen> {
                 child: ListView.separated(
                   itemCount: chamadoList.length,
                   shrinkWrap: true,
-                  itemBuilder: (context, index) {
+                    itemBuilder: (context, index) {
                     final qa = chamadoList[index];
-
                     return Card(
                         child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               ListTile(
                                   title: Text(
-                                      qa.id.toString().padLeft(6,"0"),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.didactGothic(
-                                        textStyle: TextStyle(color: Colors.black54,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
+                                    qa.id.toString().padLeft(6,"0"),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.didactGothic(
+                                      textStyle: TextStyle(color: Colors.black54,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
                                     ),
+                                  ),
                                   //subtitle: Text(qa.texto),
                                   trailing: SizedBox(
                                     height: 200, width: 800,
@@ -372,7 +446,7 @@ class _ChamadoScreenState extends State<ChamadoScreen> {
                                           Container(
                                             width: 300,
                                             child: Text(qa.texto, maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,),
+                                              overflow: TextOverflow.ellipsis,),
                                           ),
                                           Text(qa.dataCadastro.toString(), maxLines: 1,
                                             overflow: TextOverflow.ellipsis,),
@@ -395,7 +469,8 @@ class _ChamadoScreenState extends State<ChamadoScreen> {
                 ),
               ),
             ],
-        )
-    );
+          )
+      );
+    }
   }
-}
+

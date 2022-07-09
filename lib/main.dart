@@ -7,6 +7,8 @@ import 'package:reclamacao/screens/home_screen.dart';
 import 'package:reclamacao/screens/login_screen.dart';
 import 'package:reclamacao/screens/report_screen.dart';
 import 'package:reclamacao/screens/chamado_screen.dart';
+import 'package:reclamacao/screens/imagem_screen.dart';
+
 
 
 
@@ -32,8 +34,9 @@ class MyApp extends StatelessWidget {
         AjudaScreen.id: (context) => const AjudaScreen(),
         LoginScreen.id: (context) => const LoginScreen(),
         ReportScreen.id: (context) => const ReportScreen(),
-        ChamadoScreen.id: (context) => const ChamadoScreen(),
-        AtendenteScreen.id: (context) => const AtendenteScreen(),
+        ChamadoScreen.id: (context) => ChamadoScreen(email: '',),
+        AtendenteScreen.id: (context) =>  AtendenteScreen(),
+
 
         //MoviesScreen.id: (context) => MoviesScreen(),
       },
