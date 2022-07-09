@@ -5,6 +5,8 @@ import 'package:reclamacao/screens/report_screen.dart';
 import 'package:reclamacao/screens/ajuda_screen.dart';
 import 'package:reclamacao/screens/login_screen.dart';
 
+import 'atendente_screen.dart';
+
 class HomeScreen extends StatelessWidget {
   static const String id = '/home';
 
@@ -120,7 +122,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           InkWell(
                             onTap: () {
-                              Navigator.pushNamed(context, AjudaScreen.id);
+                              Navigator.pushNamed(context, AtendenteScreen.id);
                             },
 
                             child: Container(

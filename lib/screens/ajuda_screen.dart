@@ -18,6 +18,7 @@ class AjudaScreen extends StatefulWidget {
   @override
   State<AjudaScreen> createState() => _AjudaScreenState();
 }
+
 class _AjudaScreenState extends State<AjudaScreen> {
   List<Q_and_E> qaList = [];
 

@@ -4,9 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:reclamacao/screens/report_screen.dart';
-
-import 'ajuda_screen.dart';
+import '../models/login.dart';
+import 'atendente_screen.dart';
 import 'chamado_screen.dart';
 
 
@@ -23,6 +22,10 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   static const String id = '/login';
 
+  List<Login> loginList = [];
+
+  var emailDeLogin;
+
   final TextEditingController emailController =  TextEditingController();
   final TextEditingController passController =  TextEditingController();
 
@@ -35,6 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
 //-------------------------------------
   Future getUser(String email, String pass) async {
+
     final response = await http.post(
       Uri.parse('http://144.22.210.64:9999/api/login'),
       headers: <String, String>{
@@ -46,10 +50,16 @@ class _LoginScreenState extends State<LoginScreen> {
       }),
     );
     if (response.statusCode == 200) {
-     // navigate to next page
-      Navigator.pushNamed(context, ChamadoScreen.id);
 
-    } else {
+      final responseJson = jsonDecode(response.body);
+
+      if(responseJson['atendente'] == true) {
+         Navigator.pushNamed(context, AtendenteScreen.id);
+       }else {
+         Navigator.pushNamed(context, ChamadoScreen.id);
+       }
+    }
+    else {
       // If the server did not return a 201 CREATED response,
       // then throw an exception.
       _showDialog(context, "Usuario ou senha inválidos.", "\n\nTente novamente!");
@@ -57,7 +67,6 @@ class _LoginScreenState extends State<LoginScreen> {
       passController.clear();
     }
   }
-
 
   //-------------------------------------
   Future<void> _showDialog(BuildContext context, str1, str2) async {

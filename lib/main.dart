@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:reclamacao/screens/ajuda_screen.dart';
+import 'package:reclamacao/screens/atendente_screen.dart';
 import 'package:reclamacao/screens/home_screen.dart';
 import 'package:reclamacao/screens/login_screen.dart';
 import 'package:reclamacao/screens/report_screen.dart';
@@ -32,7 +33,7 @@ class MyApp extends StatelessWidget {
         LoginScreen.id: (context) => const LoginScreen(),
         ReportScreen.id: (context) => const ReportScreen(),
         ChamadoScreen.id: (context) => const ChamadoScreen(),
-
+        AtendenteScreen.id: (context) => const AtendenteScreen(),
 
         //MoviesScreen.id: (context) => MoviesScreen(),
       },
