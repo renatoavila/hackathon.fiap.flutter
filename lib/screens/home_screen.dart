@@ -1,12 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:reclamacao/screens/report_screen.dart';
 import 'package:reclamacao/screens/ajuda_screen.dart';
-import 'package:reclamacao/screens/login_screen.dart';
-
-import 'atendente_screen.dart';
-import 'imagem_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   static const String id = '/home';
@@ -17,8 +12,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         body: InkWell(
-          //mainAxisAlignment: MainAxisAlignment.start,
-          //children: [
 
           child: Stack(
             children: <Widget>[

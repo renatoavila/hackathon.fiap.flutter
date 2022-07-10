@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
           title: new Text("Aviso !!"),
           content: new Text(str1 + " " + str2),
           actions: <Widget>[
-            new FlatButton(
+            new TextButton(
               child: new Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
