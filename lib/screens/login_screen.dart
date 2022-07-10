@@ -57,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if(responseJson['atendente'] == true) {
          Navigator.pushNamed(context, AtendenteScreen.id);
        }else {
-         //Navigator.pushNamed(context, ChamadoScreen.id);
+         print('tela login -> email:'+responseJson['email'].toString());
         Navigator.of(context).push(MaterialPageRoute(builder: (context) => ChamadoScreen(email: responseJson['email'])));
 
       }

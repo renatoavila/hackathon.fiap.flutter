@@ -241,7 +241,7 @@ class _AtendenteScreenState extends State<AtendenteScreen> {
                                           IconButton(
                                             icon: Icon(Icons.edit),
                                             onPressed: () {
-                                              _showDialog(context, "Voce selecionou este chamado para atualização:", qa.id.toString().padLeft(6,"0"));
+                                              _showDialog(context, "Voce selecionou este chamado para atualização:"+ qa.id.toString().padLeft(6,"0"),"\nEsta funcionalidade encontra-se em construção!");
                                             },
                                             color: Theme.of(context).primaryColor,
                                           ),

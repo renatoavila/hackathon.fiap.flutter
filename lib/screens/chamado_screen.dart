@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'dart:html';
-import 'dart:js';
 import 'dart:typed_data';
 import 'dart:async';
-import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,16 +9,24 @@ import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path/path.dart';
 import 'package:reclamacao/models/chamado.dart';
-import 'package:reclamacao/models/reclama.dart';
+import '../models/reclama.dart';
 import 'home_screen.dart';
-import 'imagem_screen.dart';
-
-class ChamadoScreen extends StatelessWidget {
 
 
+class ChamadoScreen extends StatefulWidget {
   static const String id = '/chamado';
-  ChamadoScreen({Key? key, required this.email}) : super(key: key);
-  String? email;
+
+  var _email;
+
+  ChamadoScreen({Key? key, required email}) : super(key: key){
+    this._email=email;
+  }
+
+  @override
+  State<ChamadoScreen> createState() => _ChamadoScreenState();
+}
+
+class _ChamadoScreenState extends State<ChamadoScreen> {
 
     int myID=0;
     String myFileName="";
@@ -28,9 +34,17 @@ class ChamadoScreen extends StatelessWidget {
     List<dynamic> chamadoList = [];
 
     List<int> _selectedFile = [];
-    Uint8List? _bytesData;
+    //Uint8List? _bytesData;
+
+    String getEmail() => widget._email;
 
     final TextEditingController perguntaController =  TextEditingController();
+
+    @override
+    void initState() {
+      super.initState();
+      //obterChamados(getEmail());
+    }
 
     //-------------------------------------
     Future<void> _showDialog(context, str1, str2) async {
@@ -50,6 +64,7 @@ class ChamadoScreen extends StatelessWidget {
           );
         }, context: context,
       );
+      setState(() => {});
     }
 
 
@@ -83,6 +98,7 @@ class ChamadoScreen extends StatelessWidget {
         _showDialog(context, "Nao foi possivel registrar sua pergunta.", "\n\nTente novamente!");
         perguntaController.clear();
       }
+      setState(() => {});
     }
 
     //-------------------------------------
@@ -101,7 +117,7 @@ class ChamadoScreen extends StatelessWidget {
       if (response.statusCode == 200) {
 
         final responseJson = jsonDecode(response.body);
-print(responseJson);
+
         chamadoList = responseJson.map(
               (json) => Chamado(
             id:  json['id'],
@@ -124,6 +140,7 @@ print(responseJson);
         }
 
       }
+      setState(() => {});
     }
   //-------------------------------------
   Future salvarFoto(int id, List<int>myFile) async {
@@ -137,13 +154,13 @@ print(responseJson);
         'file', myFile,
         contentType: MediaType('application', 'octet-stream'),
         filename: myFileName
-    ));
+      )
+    );
     request.send().then((response) {
-      print("test");
       print(response.statusCode);
       if (response.statusCode == 200) print("Uploaded!");
     });
-
+    setState(() => {});
   }
 
 
@@ -160,45 +177,38 @@ print(responseJson);
           FileReader reader =  FileReader();
 
           reader.onLoadEnd.listen((e) {
-            //setState(() {
-              //var uploadedImage = reader.result as Uint8List;
-            //_bytesData = Base64Decoder().convert(reader.result.toString().split(",").last);
-            //_selectedFile = _bytesData as List<int>;
-            _selectedFile = reader.result as Uint8List;
-
-            _showDialog(myContext, 'A image '+ file.name+' esta anexada ao seu chamado', 'Pressione Enviar para prosseguir: ');
-
-           // });
+            setState(() {
+              _selectedFile = reader.result as Uint8List;
+              _showDialog(myContext, 'A image '+ file.name+' esta anexada ao seu chamado', 'Pressione Enviar para prosseguir: ');
+            });
           });
           myFileName=file.name;
 
           reader.onError.listen((fileEvent) {
-            //setState(() {
+            setState(() {
               String option1Text = "Some Error occured while reading the file";
-            //});
+            });
           });
           reader.readAsArrayBuffer(file);
         }
       });
+      setState(() => {});
     }
 
     //----------------------------
     @override
     Widget build(BuildContext context) {
 
-      final String? emailLogin =  email;
-
-      obterChamados(emailLogin!);
-
-      print('tamanho: ' + chamadoList.length.toString());
+      obterChamados(getEmail());
 
       return Scaffold(
 
+          //-------------------------------------
           body: Column (
             children: [
               Row (
                   mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
 
                   children: [
                     Padding(
@@ -310,11 +320,19 @@ print(responseJson);
                       ),
 
                       onPressed: () {
-                        criarNovoChamado(email!,perguntaController.text);
-
-                        //Navigator.pushNamed(context, HomeScreen.id);
+                        print('\nCriando novo chamado para: '+getEmail());
+                        print('Pergunta: '+' -> '+perguntaController.text);
+                        criarNovoChamado(getEmail(),perguntaController.text);
                         _showDialog(context, "Chamado cadastrado com sucesso!", "Obrigado");
-
+                        perguntaController.text="";
+                        myFileName="";
+                        setState(() {});
+                        //obterChamados(getEmail());
+                        /*Navigator.of(context).push
+                          (new MaterialPageRoute(builder: (context) => build(context)))
+                            .whenComplete((){setState(() {
+                              obterChamados(getEmail());
+                        });});*/
                       },
 
                       child: Text(
@@ -345,12 +363,34 @@ print(responseJson);
                           )
                       ),
                     ),
+
                   ]
+
               ),
+              Row (
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+
+                children: [
+                  Padding(
+                      padding: EdgeInsets.only(left: 60, bottom: 10, right: 5, top: 10),
+                      child:
+                      Text(
+                        "Imagem: "+myFileName,
+                        textAlign: TextAlign.left,
+                        style: GoogleFonts.didactGothic(
+                          textStyle: TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold),
+                        )
+                      ),
+                    )
+                  ]
+                ),
 
               //-----------------------------------------
               // header da lista de chamados
               //-----------------------------------------
+          Expanded(
+            child:
               Padding(
                 padding: EdgeInsets.only(left: 10, bottom: 20, right: 10, top: 70),
                 child: Column(
@@ -408,6 +448,7 @@ print(responseJson);
                           )
                       )
                     ]
+                  ),
                 ),
               ),
 
@@ -454,7 +495,9 @@ print(responseJson);
                                             overflow: TextOverflow.ellipsis,),
                                           IconButton(
                                             icon: Icon(Icons.edit),
-                                            onPressed: () {},
+                                            onPressed: () {
+                                              _showDialog(context, "Voce selecionou este chamado para atualização:"+ qa.id.toString().padLeft(6,"0"),"\nEsta funcionalidade encontra-se em construção!");
+                                            },
                                             color: Theme.of(context).primaryColor,
                                           ),
                                         ]
